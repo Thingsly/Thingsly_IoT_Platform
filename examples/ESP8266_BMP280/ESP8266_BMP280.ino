@@ -11,7 +11,6 @@
  * BMP280 SCL → ESP8266 D22
  *
  * Wowki: https://wokwi.com/projects/430759237006047233
- * If you want to test this example on Wokwi, you need to config mqtt_server and mqtt_port using Ngrok to setup tunnel to the server locally.
  *
  * @author Nguyen Thanh Ha 20210298 <ha.nt210298@sis.hust.edu.vn>
  * @version 1.0.0
