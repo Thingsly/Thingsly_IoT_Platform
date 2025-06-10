@@ -9,7 +9,7 @@
  * Relay GND → ESP32 GND
  * Relay IN → ESP32 D14
  * LED connected to relay NC pin to show relay status
- * 
+ *
  * Wowki: https://wokwi.com/projects/432039637302787073
  *
  * @author Nguyen Thanh Ha 20210298 <ha.nt210298@sis.hust.edu.vn>
@@ -29,7 +29,7 @@ const char *mqtt_server = "103.124.93.210";
 const int mqtt_port = 1883;
 const char *mqtt_user = "319e111e-ae21-7695-ee8";
 const char *mqtt_password = "872e27d";
-const char *mqtt_topic = "devices/telemetry";
+const char *mqtt_publish_topic = "devices/telemetry";
 const char *mqtt_control_topic = "devices/telemetry/control/23a69dda-a909-20ae-86c6-8ca84d0a4307";
 const char *mqtt_client_id = "mqtt_23a69dda-a90";
 
@@ -138,7 +138,7 @@ void publishRelayState()
     char msg[200];
     serializeJson(doc, msg);
 
-    if (client.publish(mqtt_topic, msg))
+    if (client.publish(mqtt_publish_topic, msg))
     {
         Serial.println("Relay state published successfully");
     }
