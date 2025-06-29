@@ -2,19 +2,35 @@
  * Thingsly IoT Platform Library
  *
  * This is an example of how to use the Thingsly IoT Platform Library to connect to the server and send data to the server.
- * Example for ESP8266 with BH1750 sensor to read light intensity.
+ * Example for ESP32 with BH1750 sensor to read light intensity.
  *
  * Wiring:
- * BH1750 VCC → ESP8266 3.3V
- * BH1750 GND → ESP8266 GND
- * BH1750 SDA → ESP8266 D21
- * BH1750 SCL → ESP8266 D22
- * 
+ * BH1750 VCC → ESP32 3.3V
+ * BH1750 GND → ESP32 GND
+ * BH1750 SDA → ESP32 D21
+ * BH1750 SCL → ESP32 D22
+ *
+ * JSON Format Usage:
+ * This sensor only publishes data (read-only). No control commands are needed.
+ *
+ * Data Format:
+ * The device will publish light intensity data to the telemetry topic:
+ * {"light_intensity": 123.45}
+ *
+ * Data Description:
+ * - light_intensity: Light intensity in lux (lx)
+ *   - 0-10 lx: Very dark
+ *   - 10-50 lx: Dark
+ *   - 50-200 lx: Dim
+ *   - 200-1000 lx: Normal indoor lighting
+ *   - 1000-5000 lx: Bright indoor lighting
+ *   - 5000+ lx: Bright outdoor lighting
+ *
  * Wowki: https://wokwi.com/projects/430663935576952833
- * 
+ *
  * @author Nguyen Thanh Ha 20210298 <ha.nt210298@sis.hust.edu.vn>
- * @version 1.0.0
- * @date 2025-05-11
+ * @version 1.0.6
+ * @date 2025-06-29
  *
  */
 

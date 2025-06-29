@@ -1,20 +1,31 @@
 /**
  * Thingsly IoT Platform Library
  *
- * This is an example of how to use the Thingsly IoT Platform Library to connect to the server and control a relay.
- * Example for ESP32 with relay module and status LED.
+ * This is an example of how to use the Thingsly IoT Platform Library to connect to the server and control an LED.
+ * Example for ESP8266 with LED module.
  *
  * Wiring:
- * Relay VCC → ESP32 3.3V
- * Relay GND → ESP32 GND
- * Relay IN → ESP32 D14
- * LED connected to relay NC pin to show relay status
+ * LED VCC → ESP8266 3.3V
+ * LED GND → ESP8266 GND
+ * LED IN → ESP8266 D2 (GPIO2)
  *
- * Wowki: https://wokwi.com/projects/432039637302787073
+ * JSON Format Usage:
+ * To control the LED, send JSON messages to the MQTT control topic:
+ *
+ * LED Control:
+ * {"led": 1}     - Turn LED ON
+ * {"led": 0}     - Turn LED OFF
+ *
+ * Response Format:
+ * The device will publish its current state to the telemetry topic:
+ * {"led": 1, "led_status": "ON"}
+ * {"led": 0, "led_status": "OFF"}
+ *
+ * Wowki: https://wokwi.com/projects/435088150847360001
  *
  * @author Nguyen Thanh Ha 20210298 <ha.nt210298@sis.hust.edu.vn>
- * @version 1.0.0
- * @date 2025-05-27
+ * @version 1.0.6
+ * @date 2025-06-29
  */
 
 #include <WiFi.h>
@@ -27,23 +38,23 @@ const char *password = "";        // Replace with your network password
 
 const char *mqtt_server = "103.124.93.210";
 const int mqtt_port = 1883;
-const char *mqtt_user = "319e111e-ae21-7695-ee8";
-const char *mqtt_password = "872e27d";
+const char *mqtt_user = "607aa904-8527-6c18-fb4";
+const char *mqtt_password = "8ab80ff";
 const char *mqtt_publish_topic = "devices/telemetry";
-const char *mqtt_control_topic = "devices/telemetry/control/23a69dda-a909-20ae-86c6-8ca84d0a4307";
-const char *mqtt_client_id = "mqtt_23a69dda-a90";
+const char *mqtt_control_topic = "devices/telemetry/control/50824d7e-6b13-9a1a-8eec-6a4a8bcc7902";
+const char *mqtt_client_id = "mqtt_50824d7e-6b1";
 
 // Set the interval to send data to the server
 const unsigned long SEND_INTERVAL = 5000;
 
-// Relay pin
-const int relayPin = 14;
+// LED pin
+#define LED 2
 
 WiFiClient espClient;
 PubSubClient client(espClient);
 
-// Relay state
-bool relayState = false;
+// LED state
+bool ledState = false;
 
 void setup()
 {
@@ -51,10 +62,10 @@ void setup()
     delay(1000);
     Serial.println("Initializing...");
 
-    // Initialize relay pin
-    pinMode(relayPin, OUTPUT);
-    digitalWrite(relayPin, LOW);
-    Serial.println("Relay initialized");
+    // Initialize LED pin
+    pinMode(LED, OUTPUT);
+    digitalWrite(LED, LOW);
+    Serial.println("LED initialized");
 
     Serial.print("Connecting to ");
     Serial.println(ssid);
@@ -94,20 +105,19 @@ void callback(char *topic, byte *payload, unsigned int length)
         return;
     }
 
-    // Check if the message contains relay state
-    if (doc.containsKey("relay"))
+    // Check if the message contains LED state
+    if (doc.containsKey("led"))
     {
-        bool newState = doc["relay"] == 1;
-        if (newState != relayState)
+        bool newState = doc["led"] == 1;
+        if (newState != ledState)
         {
-            relayState = newState;
-            digitalWrite(relayPin, relayState ? HIGH : LOW);
-            Serial.print("Relay state changed to: ");
-            Serial.println(relayState ? "ON" : "OFF");
-            Serial.println("LED status: " + String(relayState ? "ON" : "OFF"));
+            ledState = newState;
+            digitalWrite(LED, ledState ? HIGH : LOW);
+            Serial.print("LED state changed to: ");
+            Serial.println(ledState ? "ON" : "OFF");
 
             // Publish the new state
-            publishRelayState();
+            publishLedState();
         }
     }
 }
@@ -120,31 +130,31 @@ void loop()
     }
     client.loop();
 
-    // Publish relay state periodically
+    // Publish LED state periodically
     static unsigned long lastPublish = 0;
     if (millis() - lastPublish > SEND_INTERVAL)
     {
-        publishRelayState();
+        publishLedState();
         lastPublish = millis();
     }
 }
 
-void publishRelayState()
+void publishLedState()
 {
     StaticJsonDocument<200> doc;
-    doc["relay"] = relayState ? 1 : 0;
-    doc["led_status"] = relayState ? "ON" : "OFF";
+    doc["led"] = ledState ? 1 : 0;
+    doc["led_status"] = ledState ? "ON" : "OFF";
 
     char msg[200];
     serializeJson(doc, msg);
 
     if (client.publish(mqtt_publish_topic, msg))
     {
-        Serial.println("Relay state published successfully");
+        Serial.println("LED state published successfully");
     }
     else
     {
-        Serial.println("Failed to publish relay state");
+        Serial.println("Failed to publish LED state");
     }
 }
 

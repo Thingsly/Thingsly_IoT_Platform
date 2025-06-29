@@ -1,25 +1,46 @@
 /**
  * Thingsly IoT Platform Library
- * 
+ *
  * This is an example of how to use the Thingsly IoT Platform Library to connect to the server and send data to the server.
- * Example for ESP8266 with DHT11 sensor to read temperature and humidity.
- * 
+ * Example for ESP32 with SGP30 sensor to read CO2 and TVOC.
+ *
  * Wiring:
- * DHT11 VCC → ESP8266 3.3V
- * DHT11 GND → ESP8266 GND
- * DHT11 Data → ESP8266 D4
- * 
- * Wowki: https://wokwi.com/projects/430438476155949057
- * 
+ * SGP30 VCC → ESP32 3.3V
+ * SGP30 GND → ESP32 GND
+ * SGP30 SDA → ESP32 D4
+ * SGP30 SCL → ESP32 D5
+ *
+ * JSON Format Usage:
+ * This sensor only publishes data (read-only). No control commands are needed.
+ *
+ * Data Format:
+ * The device will publish CO2 and TVOC data to the telemetry topic:
+ * {"eco2": 400, "tvoc": 12}
+ *
+ * Data Description:
+ * - eco2: Equivalent CO2 concentration in parts per million (ppm)
+ *   - Range: 400-60000 ppm
+ *   - Accuracy: ±15% of reading
+ *   - Typical indoor levels: 400-1000 ppm
+ *   - Good air quality: < 800 ppm
+ *   - Poor air quality: > 1000 ppm
+ *
+ * - tvoc: Total Volatile Organic Compounds in parts per billion (ppb)
+ *   - Range: 0-60000 ppb
+ *   - Accuracy: ±10% of reading
+ *   - Good air quality: < 220 ppb
+ *   - Poor air quality: > 660 ppb
+ *
  * @author Nguyen Thanh Ha 20210298 <ha.nt210298@sis.hust.edu.vn>
- * @version 1.0.0
- * @date 2025-05-11
- * 
+ * @version 1.0.6
+ * @date 2025-06-29
+ *
  */
 
+#include <Wire.h>
+#include <Adafruit_SGP30.h>
 #include <WiFi.h>
 #include <PubSubClient.h>
-#include <DHT.h>
 #include <ArduinoJson.h>
 
 // Set the WiFi details
@@ -40,10 +61,8 @@ const unsigned long SEND_INTERVAL = 5000;
 WiFiClient espClient;
 PubSubClient client(espClient);
 
-// DHT sensor setup
-const int pinDHT = 4;
-#define DHTTYPE DHT11
-DHT dht(pinDHT, DHTTYPE);
+// SGP30 sensor setup
+Adafruit_SGP30 sgp;
 
 void setup()
 {
@@ -51,8 +70,16 @@ void setup()
     delay(1000);
     Serial.println("Initializing...");
 
-    dht.begin();
-    Serial.println("DHT sensor initialized");
+    // Start I2C communication
+    Wire.begin(4, 5); // SDA, SCL
+
+    if (!sgp.begin())
+    {
+        Serial.println("Sensor not found!");
+        while (1)
+            ;
+    }
+    Serial.println("SGP30 sensor initialized");
 
     Serial.print("Connecting to ");
     Serial.println(ssid);
@@ -90,27 +117,23 @@ void loop()
     }
     client.loop();
 
-    float humidity = dht.readHumidity();
-    float temperature = dht.readTemperature();
-
-    if (isnan(humidity) || isnan(temperature))
+    if (!sgp.IAQmeasure())
     {
-        Serial.println("Failed to read from DHT sensor! Retrying...");
+        Serial.println("Failed to read from SGP30 sensor! Retrying...");
         delay(SEND_INTERVAL);
         return;
     }
 
-    Serial.print("Temperature: ");
-    Serial.print(temperature);
-    Serial.println(" *C");
-
-    Serial.print("Humidity: ");
-    Serial.print(humidity);
-    Serial.println(" %");
+    Serial.print("eCO2: ");
+    Serial.print(sgp.eCO2);
+    Serial.print(" ppm\t");
+    Serial.print("TVOC: ");
+    Serial.print(sgp.TVOC);
+    Serial.println(" ppb");
 
     StaticJsonDocument<200> doc;
-    doc["humidity"] = humidity;
-    doc["temperature"] = temperature;
+    doc["eco2"] = sgp.eCO2;
+    doc["tvoc"] = sgp.TVOC;
 
     char msg[200];
     serializeJson(doc, msg);

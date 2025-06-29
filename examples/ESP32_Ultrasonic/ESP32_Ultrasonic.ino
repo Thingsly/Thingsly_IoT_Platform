@@ -9,12 +9,28 @@
  * HC-SR04 GND → ESP8266 GND
  * HC-SR04 TRIG → ESP8266 D15
  * HC-SR04 ECHO → ESP8266 D2
- * 
+ *
+ * JSON Format Usage:
+ * This sensor only publishes data (read-only). No control commands are needed.
+ *
+ * Data Format:
+ * The device will publish distance data to the telemetry topic:
+ * {"distance": 25.5}
+ *
+ * Data Description:
+ * - distance: Distance measurement in centimeters (cm)
+ *   - Range: 2-400 cm
+ *   - Accuracy: ±3mm
+ *   - Resolution: 1cm
+ *   - Minimum distance: 2cm
+ *   - Maximum distance: 400cm (4m)
+ *   - Typical applications: Object detection, parking sensors, level measurement
+ *
  * Wowki: https://wokwi.com/projects/432042876480256001
  *
  * @author Nguyen Thanh Ha 20210298 <ha.nt210298@sis.hust.edu.vn>
- * @version 1.0.0
- * @date 2025-05-27
+ * @version 1.0.6
+ * @date 2025-06-29
  */
 
 #include <WiFi.h>

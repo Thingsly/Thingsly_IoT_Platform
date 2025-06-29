@@ -2,19 +2,34 @@
  * Thingsly IoT Platform Library
  *
  * This is an example of how to use the Thingsly IoT Platform Library to connect to the server and send data to the server.
- * Example for ESP8266 with BMP280 sensor to read temperature and pressure.
+ * Example for ESP32 with BMP30 sensor to read temperature and pressure.
  *
  * Wiring:
- * BMP280 VCC → ESP8266 3.3V
- * BMP280 GND → ESP8266 GND
- * BMP280 SDA → ESP8266 D21
- * BMP280 SCL → ESP8266 D22
+ * BMP280 VCC → ESP32 3.3V
+ * BMP280 GND → ESP32 GND
+ * BMP280 SDA → ESP32 D4
+ * BMP280 SCL → ESP32 D5
  *
- * Wowki: https://wokwi.com/projects/430759237006047233
+ * JSON Format Usage:
+ * This sensor only publishes data (read-only). No control commands are needed.
+ *
+ * Data Format:
+ * The device will publish temperature and pressure data to the telemetry topic:
+ * {"temperature": 25.6, "pressure": 1013.25}
+ *
+ * Data Description:
+ * - temperature: Temperature in Celsius (°C)
+ *   - Range: -40°C to +85°C
+ *   - Accuracy: ±1°C
+ *
+ * - pressure: Atmospheric pressure in hectopascals (hPa)
+ *   - Range: 300-1100 hPa
+ *   - Accuracy: ±1 hPa
+ *   - Typical sea level pressure: ~1013.25 hPa
  *
  * @author Nguyen Thanh Ha 20210298 <ha.nt210298@sis.hust.edu.vn>
- * @version 1.0.0
- * @date 2025-05-12
+ * @version 1.0.6
+ * @date 2025-06-29
  *
  */
 
@@ -41,8 +56,8 @@ const char *mqtt_client_id = "YOUR_MQTT_CLIENT_ID";
 const unsigned long SEND_INTERVAL = 5000;
 
 // BMP280 sensor setup
-#define SDA_PIN 21
-#define SCL_PIN 22
+#define SDA_PIN 4
+#define SCL_PIN 5
 Adafruit_BMP280 bmp;
 
 WiFiClient espClient;
